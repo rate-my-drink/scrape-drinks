@@ -1,3 +1,6 @@
+import csv
+import datetime
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -52,15 +55,18 @@ def get_all_drinks(part_url):
 
 
 coffee_list = get_all_drinks(part_url="koffie?o=2&n=17&f=10003")
-tea_list = get_all_drinks(part_url="thee")
+tea_list = get_all_drinks(part_url="thee?o=2&n=17&f=6739|6737")
 
 all_drinks = coffee_list + tea_list
 
-# Write the drinks to a CSV file
-import csv
 
-# Define the filename for the CSV file
-filename = "all_drinks.csv"
+# Get the current date and time
+now = datetime.datetime.now()
+
+# Format the date as a string to append to the filename
+date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+filename = f"simon_levelt_drinks_{date_str}.csv"
 
 # Open the file in write mode
 with open(filename, mode="w", newline="") as csv_file:
