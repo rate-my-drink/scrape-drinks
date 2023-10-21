@@ -1,44 +1,88 @@
+import csv
+import datetime
+
 import requests
 from bs4 import BeautifulSoup
 
-# Send a GET request to the coffee page
-coffee_url = "https://www.simonlevelt.com/en/tea-coffee/coffee"
-coffee_response = requests.get(coffee_url)
+base_url = r"https://www.simonlevelt.nl"
 
-# Parse the HTML content of the coffee page
-coffee_soup = BeautifulSoup(coffee_response.content, "html.parser")
 
-# Find the HTML elements that contain the coffee information
-coffee_items = coffee_soup.find_all("div", class_="product-item")
+def get_all_drinks(part_url):
+    last_response = 200
+    drink_list = []
+    p = 1
+    while last_response == 200:
+        drinks_url = f"{base_url}/{part_url}&p={p}"
+        response = requests.get(drinks_url)
+        last_response = response.status_code
+        if last_response != 200:
+            break
+        # Parse the HTML content of the drinks page
+        drinks_soup = BeautifulSoup(response.content, "html.parser")
 
-# Extract the coffee information and store it in a list or dictionary
-coffee_list = []
-for item in coffee_items:
-    name = item.find("h3", class_="product-item__title").text.strip()
-    description = item.find("div", class_="product-item__description").text.strip()
-    price = item.find("span", class_="product-item__price").text.strip()
-    coffee_list.append({"name": name, "description": description, "price": price})
+        # Find the HTML elements that contain all of the drinks
+        drink_items = drinks_soup.find_all("div", class_="product--box")
 
-# Send a GET request to the tea page
-tea_url = "https://www.simonlevelt.com/en/tea-coffee/tea"
-tea_response = requests.get(tea_url)
+        # Get the name, and href of each drink
+        # Producer is fixed to be 1 (Simon Levelt)
+        for item in drink_items:
+            try:
+                a_tittle = item.find("a", class_="product--title")
+                name = a_tittle.text.strip()
+                href = a_tittle["href"]
+                drink_list.append({"name": name, "producer": 1, "href": href})
+            except:
+                pass
+        p += 1
 
-# Parse the HTML content of the tea page
-tea_soup = BeautifulSoup(tea_response.content, "html.parser")
+    for drink in drink_list:
+        try:
+            response = requests.get(drink["href"])
+            last_response = response.status_code
+            if last_response != 200:
+                continue
+            # Parse the HTML content of the drink page
+            single_drink_soup = BeautifulSoup(response.content, "html.parser")
+            description = (
+                single_drink_soup.find("div", class_="product--description")
+                .find("p")
+                .text.strip()
+            )
+            drink["description"] = description
+        except:
+            pass
+    return drink_list
 
-# Find the HTML elements that contain the tea information
-tea_items = tea_soup.find_all("div", class_="product-item")
 
-# Extract the tea information and store it in a list or dictionary
-tea_list = []
-for item in tea_items:
-    name = item.find("h3", class_="product-item__title").text.strip()
-    description = item.find("div", class_="product-item__description").text.strip()
-    price = item.find("span", class_="product-item__price").text.strip()
-    tea_list.append({"name": name, "description": description, "price": price})
+coffee_list = get_all_drinks(part_url="koffie?o=2&n=17&f=10003")
+tea_list = get_all_drinks(part_url="thee?o=2&n=17&f=6739|6737")
 
-# Combine the coffee and tea information into a single list or dictionary
-drinks_list = coffee_list + tea_list
+all_drinks = coffee_list + tea_list
 
-# Output the final list or dictionary
-print(drinks_list)
+
+# Get the current date and time
+now = datetime.datetime.now()
+
+# Format the date as a string to append to the filename
+date_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+filename = f"simon_levelt_drinks_{date_str}.csv"
+
+# Open the file in write mode
+with open(filename, mode="w", newline="") as csv_file:
+    # Create a CSV writer object
+    writer = csv.writer(csv_file)
+
+    # Write the header row
+    writer.writerow(["name", "producer", "href", "description"])
+
+    # Write each drink to a row in the CSV file
+    for drink in all_drinks:
+        writer.writerow(
+            [
+                drink["name"],
+                drink["producer"],
+                drink["href"],
+                drink.get("description", ""),
+            ]
+        )
