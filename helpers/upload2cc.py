@@ -15,6 +15,7 @@ password: str = secrets.get("PASSWORD_CC")
 class SupabaseCC:
     client: Client
     bucket_name: str = "coffee-images"
+    user_id: str
 
     def __init__(self):
         # Authentications
@@ -25,6 +26,7 @@ class SupabaseCC:
         )
         session = user_data.session
 
+        self.user_id = user_data.user.id
         self.client.postgrest.auth(
             # verified that this was real
             token=session.access_token
@@ -33,21 +35,6 @@ class SupabaseCC:
         storageSessionDict["_headers"]["authorization"] = (
             "Bearer " + session.access_token
         )
-
-        # # Upload drink
-        # res = (
-        #     self.client.table("drinks")
-        #     .insert(
-        #         {
-        #             "name": "test",
-        #             "description": "",
-        #             "producer": 3,
-        #             "user_id": user_data.user.id,
-        #             "image": None,
-        #         }
-        #     )
-        #     .execute()
-        # )
 
     def _upload_img_bytes(self, image_bytes: bytes, folder_path: str) -> str:
         if not folder_path.endswith("/"):
@@ -73,13 +60,34 @@ class SupabaseCC:
         )
         return public_url
 
+    def _update_image_table(self, public_url) -> int:
+        pass
+        # Upload drink
+        res = (
+            self.client.table("images")
+            .insert(
+                {
+                    "url": public_url,
+                    "storage_vendor": "supabase",
+                    "user": self.user_id,
+                }
+            )
+            .execute()
+        )
+        return res.data[0]["id"]
+
+    def upload_image(self, image_bytes, folder_path):
+        image_path = self._upload_img_bytes(image_bytes, folder_path)
+        public_url = self._get_image_url(image_path)
+        table_res = self._update_image_table(public_url)
+        return table_res
+
 
 image_path = Path(r"/home/tom/Pictures/default_coffee.webp")
 image_bytes = image_path.read_bytes()
 
 client_cc = SupabaseCC()
 
-image_path = client_cc._upload_img_bytes(image_bytes, "drinks/test")
-public_url = client_cc._get_image_url(image_path)
+image_id = client_cc.upload_image(image_bytes, "drinks/test")
 
-print(public_url)
+print(res)
