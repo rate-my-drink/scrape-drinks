@@ -76,18 +76,47 @@ class SupabaseCC:
         )
         return res.data[0]["id"]
 
-    def upload_image(self, image_bytes, folder_path):
+    def upload_image(self, image_bytes: bytes, folder_path: str):
         image_path = self._upload_img_bytes(image_bytes, folder_path)
         public_url = self._get_image_url(image_path)
         table_res = self._update_image_table(public_url)
         return table_res
 
+    def upload_drink(
+        self,
+        name: str,
+        producer_id: int,
+        description: str = "",
+        image_bytes: bytes = None,
+    ):
+        if image_bytes:
+            image_id = self.upload_image(image_bytes, f"drinks/{producer_id}")
+        else:
+            image_id = None
+        res = (
+            self.client.from_("drinks")
+            .insert(
+                {
+                    "name": name,
+                    "description": description,
+                    "producer": producer_id,
+                    "user_id": self.user_id,
+                    "image": image_id,
+                }
+            )
+            .execute()
+        )
+        return res
 
-image_path = Path(r"/home/tom/Pictures/default_coffee.webp")
-image_bytes = image_path.read_bytes()
 
-client_cc = SupabaseCC()
+if __name__ == "__main__":
+    image_path = Path(r"/home/tom/Pictures/default_coffee.webp")
+    image_bytes = image_path.read_bytes()
 
-image_id = client_cc.upload_image(image_bytes, "drinks/test")
+    client_cc = SupabaseCC()
 
-print(res)
+    res = client_cc.upload_drink(
+        "test", 3, description="hello from python", image_bytes=image_bytes
+    )
+
+    print(res)
