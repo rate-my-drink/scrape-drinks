@@ -82,10 +82,17 @@ class SupabaseCC:
         table_res = self._update_image_table(public_url)
         return table_res
 
+    def _get_drink(self, href) -> int or None:
+        res = self.client.from_("drinks").select("id").eq("href", href).execute()
+        if res.data:
+            return res.data[0]["id"]
+        return None
+
     def upload_drink(
         self,
         name: str,
         producer_id: int,
+        href: str,
         description: str = "",
         image_bytes: bytes = None,
     ):
@@ -93,30 +100,61 @@ class SupabaseCC:
             image_id = self.upload_image(image_bytes, f"drinks/{producer_id}")
         else:
             image_id = None
-        res = (
-            self.client.from_("drinks")
-            .insert(
-                {
-                    "name": name,
-                    "description": description,
-                    "producer": producer_id,
-                    "user_id": self.user_id,
-                    "image": image_id,
-                }
+
+        drink_id = self._get_drink(href)
+        if drink_id:
+            res = (
+                self.client.from_("drinks")
+                .update(
+                    {
+                        "name": name,
+                        "description": description,
+                        "producer": producer_id,
+                        "user_id": self.user_id,
+                        "image": image_id,
+                    }
+                )
+                .eq("id", drink_id)
+                .execute()
             )
-            .execute()
-        )
+        else:
+            res = (
+                self.client.from_("drinks")
+                .insert(
+                    {
+                        "name": name,
+                        "description": description,
+                        "producer": producer_id,
+                        "href": href,
+                        "user_id": self.user_id,
+                        "image": image_id,
+                    }
+                )
+                .execute()
+            )
         return res
 
 
 if __name__ == "__main__":
     image_path = Path(r"/home/tom/Pictures/default_coffee.webp")
     image_bytes = image_path.read_bytes()
-
+    href = "https://caffeinecritics.com/"
     client_cc = SupabaseCC()
 
     res = client_cc.upload_drink(
-        "test", 3, description="hello from python", image_bytes=image_bytes
+        "test",
+        3,
+        description="hello from python",
+        href=href,
+        image_bytes=image_bytes,
     )
 
     print(res)
+    res2 = client_cc.upload_drink(
+        "test 2",
+        3,
+        description="hello from python, again",
+        href=href,
+        image_bytes=image_bytes,
+    )
+    print(res2)
