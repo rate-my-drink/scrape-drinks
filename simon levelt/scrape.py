@@ -82,7 +82,7 @@ with open(filename, mode="w", newline="") as csv_file:
     writer = csv.writer(csv_file)
 
     # Write the header row
-    writer.writerow(["name", "producer", "href", "description"])
+    writer.writerow(["name", "producer", "href", "image_url", "description"])
 
     # Write each drink to a row in the CSV file
     for drink in all_drinks:
@@ -91,6 +91,7 @@ with open(filename, mode="w", newline="") as csv_file:
                 drink["name"],
                 drink["producer"],
                 drink["href"],
+                drink.get("image_url", ""),
                 drink.get("description", ""),
             ]
         )
