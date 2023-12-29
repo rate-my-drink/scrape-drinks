@@ -18,3 +18,4 @@ for index, row in tqdm(df.iterrows()):
         description=row["description"],
         image_bytes=image,
     )
+# took 2 minutes and 19 seconds
