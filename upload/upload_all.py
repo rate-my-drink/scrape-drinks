@@ -9,7 +9,7 @@ csv_loc = r"/home/tom/Documents/git/scrape-drinks/upload/filtered_data/senzatea.
 
 df = pd.read_csv(csv_loc)
 
-for index, row in tqdm(df.iterrows(), position=0, leave=True):
+for index, row in tqdm(df.iterrows()):
     image = load_img_from_url(row["image_url"])
     client.upload_drink(
         row["name"],
