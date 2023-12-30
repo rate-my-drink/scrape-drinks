@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 client = SupabaseCC()
 
-csv_loc = r"/home/tom/Documents/git/scrape-drinks/upload/filtered_data/simon_levelt_drinks_2023-12-29_23-28-32.csv"
+csv_loc = r"/home/tom/Documents/git/scrape-drinks/upload/filtered_data/simon_levelt_drinks.csv"
 
 
 df = pd.read_csv(csv_loc)
