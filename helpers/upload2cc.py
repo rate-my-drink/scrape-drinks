@@ -24,13 +24,13 @@ class SupabaseCC:
         user_data = self.client.auth.sign_in_with_password(
             {"email": user_name, "password": password}
         )
-        session = user_data.session
-
         self.user_id = user_data.user.id
-        self.client.postgrest.auth(
-            # verified that this was real
-            token=session.access_token
-        )
+
+        # Uploading to postgres pass the RLS need a token
+        session = user_data.session
+        self.client.postgrest.auth(token=session.access_token)
+
+        # Uploading to storage pass the RLS needs the token in the header
         storageSessionDict = self.client.storage.session.__dict__
         storageSessionDict["_headers"]["authorization"] = (
             "Bearer " + session.access_token
