@@ -26,16 +26,6 @@ class SupabaseCC:
         )
         self.user_id = user_data.user.id
 
-        # Uploading to postgres pass the RLS need a token
-        session = user_data.session
-        self.client.postgrest.auth(token=session.access_token)
-
-        # Uploading to storage pass the RLS needs the token in the header
-        storageSessionDict = self.client.storage.session.__dict__
-        storageSessionDict["_headers"]["authorization"] = (
-            "Bearer " + session.access_token
-        )
-
     def _upload_img_bytes(self, image_bytes: bytes, folder_path: str) -> str:
         if not folder_path.endswith("/"):
             folder_path += "/"
