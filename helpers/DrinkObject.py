@@ -6,7 +6,7 @@ class Drink:
     href: str
     name: str
     producer: int
-    description: str = ""
+    description: str = " "
     image_url: str = ""
 
     def __iter__(self):
