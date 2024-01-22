@@ -1,10 +1,11 @@
+from pathlib import Path
 from helpers import load_img_from_url, SupabaseCC
 import pandas as pd
 from tqdm import tqdm
 
 client = SupabaseCC()
 
-csv_loc = r"/home/tom/Documents/git/scrape-drinks/upload/filtered_data/Pukka.csv"
+csv_loc = Path(__file__).parent.absolute() / "filtered_data" / "Bellarom.csv"
 
 
 df = pd.read_csv(csv_loc)
