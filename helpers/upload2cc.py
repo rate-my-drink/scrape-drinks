@@ -90,7 +90,8 @@ class SupabaseCC:
             image_id = self.upload_image(image_bytes, f"drinks/{producer_id}")
         else:
             image_id = None
-
+        if not description:
+            description = " "
         drink_id = self._get_drink(href)
         if drink_id:
             res = (

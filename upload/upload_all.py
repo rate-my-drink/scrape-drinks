@@ -5,10 +5,11 @@ from tqdm import tqdm
 
 client = SupabaseCC()
 
-csv_loc = Path("upload") / "filtered_data" / "Bean Brothers.csv"
+csv_loc = Path("upload") / "filtered_data" / "Celestial Seasonings.csv"
 
 
 df = pd.read_csv(csv_loc)
+df = df.fillna(" ")
 
 for index, row in tqdm(df.iterrows()):
     image = load_img_from_url(row["image_url"])
@@ -16,7 +17,7 @@ for index, row in tqdm(df.iterrows()):
         row["name"],
         row["producer"],
         row["href"],
-        description=row["description"],
+        description=row.get("description", " "),
         image_bytes=image,
     )
 # took 2 minutes and 19 seconds
