@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 client = SupabaseCC()
 
-csv_loc = Path("upload") / "filtered_data" / "Twinings.csv"
+csv_loc = Path("upload") / "filtered_data" / "Douwe Egberts.csv"
 
 
 df = pd.read_csv(csv_loc)
