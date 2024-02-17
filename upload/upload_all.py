@@ -5,14 +5,20 @@ from tqdm import tqdm
 
 client = SupabaseCC()
 
-csv_loc = Path("upload") / "filtered_data" / "Local tea.csv"
+csv_loc = Path("upload") / "filtered_data" / "Twinings.csv"
 
 
 df = pd.read_csv(csv_loc)
 df = df.fillna(" ")
 
 for index, row in tqdm(df.iterrows()):
-    image = load_img_from_url(row["image_url"])
+    try:
+        image = load_img_from_url(row["image_url"])
+    except:
+        print(
+            f"Error: Image of {row['name']} could not be downloaded. {row['image_url']}"
+        )
+        image = None
     client.upload_drink(
         row["name"],
         row["producer"],
